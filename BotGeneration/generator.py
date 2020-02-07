@@ -12,6 +12,7 @@ import random, copy, sys
 from inst_list import *
 from esilEmul import *
 from compiler import *
+from config import *
 
 
 def create_new_bot(single_bot_start_size):
@@ -67,7 +68,8 @@ def score_population(population):
 def getBest(scores):
     score_sums = []
     for sc in scores:
-        score_sums.append(sc[0] + sc[1]*2)
+        score_sums.append(sc[1]*damage_mult)
+        #score_sums.append(sc[0] + sc[1]*damage_mult)
 
     return np.argmax(score_sums), score_sums
 
@@ -153,7 +155,6 @@ def mutate(bot, probability):
         return bigMutation(bot, probability)
 
 
-
 def pick_mate(scores):
     array = np.array(scores)
     temp = array.argsort()
@@ -199,14 +200,13 @@ def main():
     # parameters
     population_size = 20
     single_bot_start_size = 20           # start bots have max x instructions
-    number_of_iterations = 50
+    number_of_iterations = 100
     number_of_couples = 3
     number_of_winners_to_keep = 5
     mutation_probability = 0.1
 
     # create the starting population
     population = create_starting_population(population_size, single_bot_start_size)
-
 
     last_score = (0,0)
     leading_bot = None
@@ -225,7 +225,8 @@ def main():
         best_bot = population[best_index]
         best_score = scores[best_index]
 
-        if (best_score[0] + 2*best_score[1]) > (last_score[0] + last_score[1]*2):
+        if (best_score[1]*damage_mult) > (last_score[1]*damage_mult):
+        #if (best_score[0] + best_score[1]*damage_mult) > (last_score[0] + last_score[1]*damage_mult):
         #if (best_score[1] > last_score[1]) or best_score[1] > 0 and best_score[0] > last_score[0]:
             print('Iteration %i: Best so far is %i/%i execution/damage' % (i, best_score[0], best_score[1]))
             print("\nBOT:")
@@ -234,9 +235,9 @@ def main():
 
         # allow members of the population to breed based on their relative score;
         # i.e., if their score is higher they're more likely to breed
-        for j in range(0, number_of_couples):
-            new_1, new_2 = crossover(population[pick_mate(sums)], population[pick_mate(sums)])
-            new_population = new_population + [new_1, new_2]
+        #for j in range(0, number_of_couples):
+        #    new_1, new_2 = crossover(population[pick_mate(sums)], population[pick_mate(sums)])
+        #    new_population = new_population + [new_1, new_2]
 
         # pick best and mutate those
         new_population += pickBest(population, number_of_winners_to_keep)

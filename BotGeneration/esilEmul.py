@@ -3,7 +3,7 @@ import r2pipe
 '''
   emulate Bot using ESIL
 '''
-def emulBot(r2p):
+def emulBot(r2p, codesize):
 
   damage = 0
   executed = 0
@@ -16,6 +16,11 @@ def emulBot(r2p):
     regs = r2p.cmdj("drj")
     if regs["eip"] >= 1024:
       return executed, damage
+
+    # avoid executing outside of our own code
+    # -> stopp executing 0000 -> add [eax], al 
+    if regs["eip"] < 0x200 or regs["eip"] > 0x200+codesize:
+      return executed, damage  
 
     # Invalid Instruction check
     curi = r2p.cmdj("pdj 1 @ eip")[0]
@@ -70,7 +75,9 @@ def emulate(codeasm):
   r2p.cmd("wx {}@0x200".format(hex(codeasm)[2:]))
   r2p.cmd("aer PC=0x200")
 
+  codesize = int((len(hex(codeasm)[2:])+0.5)/2)
+
   # emulate by single stepping
-  executed, write_damage = emulBot(r2p)
+  executed, write_damage = emulBot(r2p, codesize)
 
   return executed, write_damage  # fitness, damage and execution time

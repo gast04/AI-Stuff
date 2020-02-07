@@ -1,13 +1,6 @@
 import random
 
-INST_JMP = "jmp"
-
-# define registers and possible opcodes
-registers = ["eax", "ebx", "ecx", "edx", "esi", "edi", "esp", "ebp"]
-opcodes = [("mov",2), ("add",2), ("sub",2), (INST_JMP,1), 
-           ("push",1), ("pushad",1), ("inc", 1), ("dec",1), 
-           ("cmp", 2), ("je", 1), ("jne", 1)]
-
+from config import *
 
 def createRandomInst(bot):
     opr = random.randint(0, len(opcodes)-1)
@@ -20,7 +13,10 @@ def createRandomInst(bot):
             reg = random.randint(0, bot.len()-1)        # jump inside code
 
     if opcode[1] == 2:
-        imm = random.randint(0,2**10)   # 2**10 = 1024
+        if random.random() < 0.5:
+            imm = random.randint(0,2**10)   # 2**10 = 1024
+        else:
+            imm = random.randint(0,2**32)
     else:
         imm = None
 
@@ -94,7 +90,7 @@ class Bot:
     # scan bot for "jump label"
     labels = []
     for inst in self.instructions:
-      if inst.opcode == INST_JMP and type(inst.paramname) == int:
+      if inst.opcode[0] == "j" and type(inst.paramname) == int:
         labels.append(inst.paramname)
 
     for i,inst in enumerate(self.instructions):
@@ -132,4 +128,5 @@ class Bot:
     return (self.execution, self.damage)
 
   def getScore(self):
-    return (self.execution + self.damage*2)
+    return self.damage*damage_mult
+    #return (self.execution + self.damage*damage_mult)
